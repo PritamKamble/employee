@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Employee Portal</title>
+</head>
+
+<body>
+    <h1>Employee List</h1>
+
+    <form id="addEmployeeForm">
+        <label for="id">ID:</label>
+        <input type="text" id="id" name="id"><br><br>
+
+        <label for="name">Name:</label>
+        <input type="text" id="name" name="name"><br><br>
+
+        <input type="submit" value="Add Employee">
+    </form>
+
+    <button id="getAllEmployeesBtn">Get All Employees</button>
+
+    <ul id="employeeList"></ul>
+
+    <script>
+        const addEmployeeForm = document.getElementById('addEmployeeForm');
+        const getAllEmployeesBtn = document.getElementById('getAllEmployeesBtn');
+        const employeeList = document.getElementById('employeeList');
+
+        addEmployeeForm.addEventListener('submit', event => {
+            event.preventDefault();
+
+            const formData = new FormData(addEmployeeForm);
+            const employeeData = {
+                id: formData.get('id'),
+                name: formData.get('name')
+            };
+
+            fetch('http://localhost:8080/employee/save', {
+                method: 'POST',
+                body: JSON.stringify(employeeData),
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            })
+                .then(response => {
+                    if (response.ok) {
+                        return response.json();
+                    } else {
+                        throw new Error('Error:' + response.status);
+                    }
+                })
+                .then(data => {
+                    console.log('Employee added:', data);
+                    addEmployeeForm.reset();
+                })
+                .catch(error => console.error(error));
+        });
+
+        getAllEmployeesBtn.addEventListener('click', () => {
+            fetch('http://localhost:8080/employee/all')
+                .then(response => {
+                    if (response.ok) {
+                        return response.json();
+                    } else {
+                        throw new Error('Error:' + response.status);
+                    }
+                })
+                .then(data => {
+                    employeeList.innerHTML = '';
+                    data.forEach(employee => {
+                        const li = document.createElement('li');
+                        li.textContent = `ID: ${employee.id}, Name: ${employee.name}`;
+                        employeeList.appendChild(li);
+                    });
+                })
+                .catch(error => console.error(error));
+        });
+    </script>
+</body>
+
+</html>
